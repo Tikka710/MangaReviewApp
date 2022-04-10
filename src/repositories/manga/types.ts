@@ -1,0 +1,49 @@
+/**
+ * Google Books APIのレスポンス
+ */
+
+export interface Result {
+     items: MangaItem[];
+     kind: string;
+     totalItems: number;
+ }
+
+
+ /**
+ * マンガの情報
+ */
+export interface MangaItem {
+    id: string;
+    volumeInfo: {
+        title: string;
+        authors?: string[];
+        publishedDate?: string;
+        description?: string;
+        publisher?: string;
+        imageLinks?: {
+            smallThumbnail: string;
+            thumbnail: string;
+          };
+        pageCount: number;
+        previewLink?: string;
+    }
+    saleInfo?: {
+        listPrice: {
+          amount: number;
+        };
+      }
+ }
+
+ /**
+ * query parameters
+ */
+
+export interface Params {
+    q: string;
+    startIndex?: number;
+  }
+
+  export interface MangaRepositoryInterface {
+    get(params: Params): Promise<Result>;
+    find(id: string): Promise<MangaItem>;
+  }
