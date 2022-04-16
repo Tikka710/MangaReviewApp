@@ -1,6 +1,6 @@
 import { MangaRepository, MangaRepositoryInterface } from './manga'
 
-export const MANGA = Symbol('book')
+export const MANGA = Symbol('manga')
 
 export interface Repositories {
   [MANGA]: MangaRepositoryInterface;

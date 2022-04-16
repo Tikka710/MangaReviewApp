@@ -14,7 +14,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        maincolor: '#bc611e',
+        main: '#bc611e',
+        text: '#372a1f',
+        border: '#877e78',
+        primary: '#1e79bc'
       }
     },
   },
