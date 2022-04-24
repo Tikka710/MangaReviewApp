@@ -32,7 +32,7 @@ export interface MangaItem {
           amount: number;
         };
       }
- }
+}
 
  /**
  * query parameters
