@@ -6,12 +6,16 @@
     {#if empty}
       <div>検索結果が見つかりませんでした。</div>
     {:else}
+    <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
       {#each mangas as manga (manga.id)}
-        <div>{manga.volumeInfo.title}</div>
-      {/each}
+        <BookCard {manga} />
+        {/each}
+    </div>
     {/if}
     {#await promise}
-    <div>loading...</div>
+      <div class="flex justify-center">
+        <Spinner />
+      </div>
     {:catch e}
       <span class="text-red-600 text-sm">
         {e.message}
@@ -24,8 +28,10 @@
 
 <script lang="ts">
 import SearchBar from '../components/SearchBar.svelte'
+import Spinner from '../components/Spinner.svelte'
 import type { Result, MangaItem } from '../repositories/manga'
 import RepositoryFactory, { MANGA } from '../repositories/RepositoryFactory'
+import BookCard from '../components/BookCard.svelte'
 
 const MangaRepository = RepositoryFactory[MANGA]
 
