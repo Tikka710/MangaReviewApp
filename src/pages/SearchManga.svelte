@@ -2,7 +2,7 @@
 <form on:submit|preventDefault={handleSubmit}>
   <SearchBar bind:value={q} />
 </form>
-
+  <div class="text-center">
     {#if empty}
       <div>検索結果が見つかりませんでした。</div>
     {:else}
@@ -11,6 +11,7 @@
         <BookCard {manga} />
         {/each}
     </div>
+    <InfiniteScroll window threshold={100} window on:loadMore={handleLoadMore} {hasMore} />
     {/if}
     {#await promise}
       <div class="flex justify-center">
@@ -21,10 +22,7 @@
         {e.message}
       </span>
   {/await}
-
-  
-
-
+    </div>
 
 <script lang="ts">
 import SearchBar from '../components/SearchBar.svelte'
@@ -32,6 +30,7 @@ import Spinner from '../components/Spinner.svelte'
 import type { Result, MangaItem } from '../repositories/manga'
 import RepositoryFactory, { MANGA } from '../repositories/RepositoryFactory'
 import BookCard from '../components/BookCard.svelte'
+import InfiniteScroll from "svelte-infinite-scroll"
 
 const MangaRepository = RepositoryFactory[MANGA]
 
@@ -39,6 +38,9 @@ let q = ''
 let empty = false
 let mangas: MangaItem[] = []
 let promise: Promise<void>
+let totalItems = 0
+
+$: hasMore = totalItems > mangas.length
 
   const handleSubmit = () => {
     if (!q.trim()) return
@@ -48,9 +50,31 @@ let promise: Promise<void>
   const getMangas = async () => {
     mangas = []
     empty = false
+    startIndex = 0
     const result = await MangaRepository.get({ q })
     empty = result.totalItems === 0
     mangas = result.items
   }
+
+  const handleLoadMore = () => {
+    console.log('handleLoadMore')
+    startIndex += 10
+    promise = getNextPage()
+  }
+
+  const getNextPage = async () => {
+    const result = await MangaRepository.get({ q, startIndex })
+
+    // 取得データが既に存在するものを含む可能性があるので、idでフィルタリングしてます。
+    const mangaIds = mangas.map(maga => manga.id)
+    const filterdItem = result.items.filter(item => {
+      return !mangaIds.includes(item.id)
+    })
+
+    mangas = [...mangas, ...filterdItem]
+
+  }
+
+  
 
 </script>
