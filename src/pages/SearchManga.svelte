@@ -11,7 +11,7 @@
         <BookCard {manga} />
         {/each}
     </div>
-    <InfiniteScroll window threshold={100} window on:loadMore={handleLoadMore} {hasMore} />
+    <InfiniteScroll window threshold={100} on:loadMore={handleLoadMore} {hasMore} />
     {/if}
     {#await promise}
       <div class="flex justify-center">
@@ -39,6 +39,7 @@ let empty = false
 let mangas: MangaItem[] = []
 let promise: Promise<void>
 let totalItems = 0
+let startIndex = 0
 
 $: hasMore = totalItems > mangas.length
 
@@ -53,17 +54,19 @@ $: hasMore = totalItems > mangas.length
     startIndex = 0
     const result = await MangaRepository.get({ q })
     empty = result.totalItems === 0
+    totalItems = result.totalItems
     mangas = result.items
   }
 
   const handleLoadMore = () => {
-    console.log('handleLoadMore')
     startIndex += 10
     promise = getNextPage()
+    console.log(promise)
   }
 
   const getNextPage = async () => {
     const result = await MangaRepository.get({ q, startIndex })
+    
 
     // 取得データが既に存在するものを含む可能性があるので、idでフィルタリングしてます。
     const mangaIds = mangas.map(maga => manga.id)
