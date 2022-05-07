@@ -7,7 +7,7 @@
       <div>検索結果が見つかりませんでした。</div>
     {:else}
     <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
-      {#each mangas as manga (manga.id)}
+      {#each $mangas as manga (manga.id)}
         <BookCard {manga} />
         {/each}
     </div>
@@ -27,19 +27,25 @@
 <script lang="ts">
 import SearchBar from '../components/SearchBar.svelte'
 import Spinner from '../components/Spinner.svelte'
-import type { Result, MangaItem } from '../repositories/manga'
+// import type { Result, MangaItem } from '../repositories/manga'
 import RepositoryFactory, { MANGA } from '../repositories/RepositoryFactory'
 import BookCard from '../components/BookCard.svelte'
 import InfiniteScroll from "svelte-infinite-scroll"
+import { mangas } from '../store/manga'
+import { onDestroy } from 'svelte'
 
 const MangaRepository = RepositoryFactory[MANGA]
 
 let q = ''
 let empty = false
-let mangas: MangaItem[] = []
+// let mangas: MangaItem[] = []
 let promise: Promise<void>
 let totalItems = 0
 let startIndex = 0
+let _mangas = MangaItem[]
+const unsubscribe = mangas.subscribe(value => _mangas = value)
+
+onDestroy(unsubscribe)
 
 $: hasMore = totalItems > mangas.length
 
@@ -49,13 +55,13 @@ $: hasMore = totalItems > mangas.length
   }
 
   const getMangas = async () => {
-    mangas = []
+    $mangas = []
     empty = false
     startIndex = 0
-    const result = await MangaRepository.get({ q })
+    const result = await MangaRepository.get({ q, startIndex })
     empty = result.totalItems === 0
     totalItems = result.totalItems
-    mangas = result.items
+    $mangas = result.items
   }
 
   const handleLoadMore = () => {
@@ -67,14 +73,13 @@ $: hasMore = totalItems > mangas.length
   const getNextPage = async () => {
     const result = await MangaRepository.get({ q, startIndex })
     
-
     // 取得データが既に存在するものを含む可能性があるので、idでフィルタリングしてます。
-    const mangaIds = mangas.map(maga => manga.id)
+    const mangaIds = $mangas.map(maga => manga.id)
     const filterdItem = result.items.filter(item => {
       return !mangaIds.includes(item.id)
     })
 
-    mangas = [...mangas, ...filterdItem]
+    $mangas = [...$mangas, ...filterdItem]
 
   }
 
